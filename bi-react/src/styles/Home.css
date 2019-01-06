@@ -1,0 +1,18 @@
+.rowC{display:flex; 
+	flex-direction:row;
+	flex-grow: 1;}
+.ib {
+	display: inline-block;
+}
+
+.full {
+	width: 100%;
+}
+
+.quarter {
+	width: 25%;
+}
+
+.rowCards {
+	display:flex;
+}
