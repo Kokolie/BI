@@ -47,4 +47,5 @@ app.use(express.errorHandler({ logger }));
 
 app.hooks(appHooks);
 
+const server = app.listen(3031);
 module.exports = app;
