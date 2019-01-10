@@ -61,7 +61,7 @@ const sequelize = new Sequelize('datawarehouse', 'root', 'root',
   Movement.belongsTo(Location, {foreignKey: 'destinationId'});
   Movement.belongsTo(Vehicle);
 
-async addCountry(data, params) {
+async function addCountry(data, params) {
 
   sequelize.sync()
   .then(() => Country.create({
@@ -69,7 +69,7 @@ async addCountry(data, params) {
   }));
 }
 
-async addClient(data, params) {
+async function addClient(data, params) {
 
   sequelize.sync()
   .then(() => Client.create({
@@ -77,7 +77,7 @@ async addClient(data, params) {
   }));
 }
 
-async addVehicle(data, params) {
+async function addVehicle(data, params) {
 
   sequelize.sync()
   .then(() => Vehicle.create({
@@ -85,7 +85,7 @@ async addVehicle(data, params) {
   }));
 }
 
-async addAlertType(data, params) {
+async function addAlertType(data, params) {
 
   sequelize.sync()
   .then(() => Alerttype.create({
@@ -94,7 +94,7 @@ async addAlertType(data, params) {
   }));
 }
 
-async addAlert(data, params) {
+async function addAlert(data, params) {
 
   sequelize.sync()
   .then(() => Alert.create({
@@ -102,7 +102,7 @@ async addAlert(data, params) {
   }));
 }
 
-async addSensorType(data, params) {
+async function addSensorType(data, params) {
 
   sequelize.sync()
   .then(() => Sensortype.create({
@@ -111,7 +111,7 @@ async addSensorType(data, params) {
   }));
 }
 
-async addSensorReading(data, params) {
+async function addSensorReading(data, params) {
 
   sequelize.sync()
   .then(() => Sensorreading.create({
@@ -119,7 +119,7 @@ async addSensorReading(data, params) {
   }));
 }
 
-async addLocation(data, params) {
+async function addLocation(data, params) {
 
   sequelize.sync()
   .then(() => Location.create({
@@ -129,7 +129,7 @@ async addLocation(data, params) {
   }));
 }
 
-async addMovement(data, params) {
+async function addMovement(data, params) {
 
   sequelize.sync()
   .then(() => Movement.create({

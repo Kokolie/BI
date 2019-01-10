@@ -5,6 +5,7 @@ import { Alert, Collapse, Col, Container, Navbar, NavbarBrand, NavbarToggler, Na
 import Img from 'react-image'
 import axios from 'axios';
 import Home from './Home.jsx'
+import Upload from './Upload.jsx'
 
 class NavBar extends React.Component {
   constructor(props) {
@@ -12,7 +13,7 @@ class NavBar extends React.Component {
 
     this.toggle = this.toggle.bind(this);
     this.state = {
-      isOpen: false,
+      isOpen: true,
       loggedIn: false,
       loginExpired: false
     };
@@ -39,10 +40,14 @@ class NavBar extends React.Component {
               <NavItem>
                 <Link className="nav-tab" to="/Home">Home</Link>
               </NavItem>
+              <NavItem>
+                <Link className="nav-tab" to="/Upload">Upload</Link>
+              </NavItem>              
             </Nav> }
           </Collapse>          
         </Navbar>
         <Route exact path="/" component={Home} />
+        <Route exact path="/Upload" component={Upload} />
         </div>
       </Router>
       <div className="footer">

@@ -1,3 +1,4 @@
+const dauria = require('dauria');
 
 
 module.exports = {
