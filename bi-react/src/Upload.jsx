@@ -10,12 +10,17 @@ class Upload extends React.Component {
     this.state = {
       selectedFile: null,
       selectedFileXlsx: null,
-      loaded: 0
+      selectedFileXml: null,
+      loaded: 0,
+      loadedXlsx: 0,
+      loadedXml: 0
     };
     this.handleUpload = this.handleUpload.bind(this);
     this.handleselectedFile = this.handleselectedFile.bind(this);
     this.handleUploadXlsx = this.handleUploadXlsx.bind(this);
     this.handleselectedFileXlsx = this.handleselectedFileXlsx.bind(this);
+    this.handleUploadXml = this.handleUploadXml.bind(this);
+    this.handleselectedFileXml = this.handleselectedFileXml.bind(this);
   }
 
   async componentDidMount() {
@@ -63,7 +68,7 @@ class Upload extends React.Component {
           },
           onUploadProgress: ProgressEvent => {
             this.setState({
-              loaded: (ProgressEvent.loaded / ProgressEvent.total*100),
+              loadedXlsx: (ProgressEvent.loaded / ProgressEvent.total*100),
             })
           },
         })
@@ -76,7 +81,34 @@ class Upload extends React.Component {
   handleselectedFileXlsx = event => {
       this.setState({
         selectedFile: event.target.files[0],
-        loaded: 0,
+        loadedXlsx: 0,
+      })
+    }
+
+  handleUploadXml = (e) => {
+      const data = new FormData();
+      data.append('uri', this.state.selectedFile, this.state.selectedFile.name);
+      axios
+        .post("http://localhost:3030/readalert", data, { 
+          headers: {
+          'Content-Type': 'multipart/form-data'
+          },
+          onUploadProgress: ProgressEvent => {
+            this.setState({
+              loadedXml: (ProgressEvent.loaded / ProgressEvent.total*100),
+            })
+          },
+        })
+        .then(res => {
+          console.log(res.statusText)
+        })
+
+  }
+
+  handleselectedFileXml = event => {
+      this.setState({
+        selectedFile: event.target.files[0],
+        loadedXlsx: 0,
       })
     }
 
@@ -107,9 +139,21 @@ class Upload extends React.Component {
     </CardBody>
     <CardFooter>
       <Button onClick={this.handleUploadXlsx}>Upload</Button>
-      <div> {Math.round(this.state.loaded,2) } %</div>
+      <div> {Math.round(this.state.loadedXlsx,2) } %</div>
     </CardFooter>
-    </Card>    
+    </Card>
+    <Card>
+    <CardBody>
+    <CardTitle>Upload an xml alert file</CardTitle>
+    <CardText> 
+      <Input type="file" name="file" id="" onChange={this.handleselectedFileXml}/>
+    </CardText>
+    </CardBody>
+    <CardFooter>
+      <Button onClick={this.handleUploadXml}>Upload</Button>
+      <div> {Math.round(this.state.loadedXml,2) } %</div>
+    </CardFooter>
+    </Card>       
     </CardGroup> 
     </Form>
     </div>)

@@ -8,6 +8,17 @@ const blobStorage = fs('./uploads');
 const dauria = require('dauria');
 const multer = require('multer');
 const multipartMiddleware = multer();
+const fsjs = require('fs');
+
+function readFile(fileName) {
+
+  fsjs.readFile("./uploads/" + fileName, function(err, data) {
+
+    var contents = `${data}`
+    //Check file type
+    console.log(contents);
+  });
+}
 
 module.exports = function() {
   const app = this;
@@ -32,7 +43,10 @@ module.exports = function() {
   );
   // Get our initialized service so that we can register hooks and filters
   const service = app.service('readxlsx');
-
+  service.on('created', function(file) {
+    readFile(file.id);
+    //console.log(file);
+  })
   service.hooks(hooks);
 
   if (service.filter) {

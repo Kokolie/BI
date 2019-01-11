@@ -1,7 +1,7 @@
-// Initializes the `readtxt#` service on path `/readtxt`
+// Initializes the `readalert#` service on path `/readalert`
 const createService = require('feathers-nedb');
-const createModel = require('../../models/readtxt.model');
-const hooks = require('./readtxt.hooks');
+const createModel = require('../../models/readalert.model');
+const hooks = require('./readalert.hooks');
 const blobService = require('feathers-blob');
 const fs = require('fs-blob-store');
 const blobStorage = fs('./uploads');
@@ -16,20 +16,7 @@ function readFile(fileName) {
 
     var contents = `${data}`
     //Check file type
-    //console.log(contents);
-    if(contents.substring(1, 6) === "AVGID") {
-      console.log("avg");
-    }
-    else if(contents.substring(1, 7) === "CustID") {
-      console.log("customer");
-    }
-    else {
-      console.log("Oh noes");
-      console.log(contents.substring(1, 8));
-    }
-    var linesplit = contents.split("\r\n");
-    linesplit.shift();
-    //console.log(linesplit);
+    console.log(contents);
   });
 }
 
@@ -39,7 +26,7 @@ module.exports = function() {
   const paginate = app.get('paginate');
 
   // Initialize our service with any options it requires
-  app.use('/readtxt',
+  app.use('/readalert',
 
       // multer parses the file named 'uri'.
       // Without extra params the data is
@@ -55,7 +42,7 @@ module.exports = function() {
       blobService({Model: blobStorage})
   );
   // Get our initialized service so that we can register hooks and filters
-  const service = app.service('readtxt');
+  const service = app.service('readalert');
   service.on('created', function(file) {
     readFile(file.id);
     //console.log(file);

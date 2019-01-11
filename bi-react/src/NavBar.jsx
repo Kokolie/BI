@@ -1,8 +1,7 @@
 import React from 'react';
 import './styles/NavBar.css';
 import { BrowserRouter as Router, Route, Link } from "react-router-dom";
-import { Alert, Collapse, Col, Container, Navbar, NavbarBrand, NavbarToggler, Nav, NavItem, Row } from 'reactstrap';
-import Img from 'react-image'
+import { Collapse, Col, Container, Navbar, NavbarBrand, NavbarToggler, Nav, NavItem, Row } from 'reactstrap';
 import axios from 'axios';
 import Home from './Home.jsx'
 import Upload from './Upload.jsx'

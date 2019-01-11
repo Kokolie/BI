@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Card, CardBody, CardGroup, CardText, CardTitle } from 'reactstrap';
+import { Card, CardBody, CardGroup, CardText, CardTitle } from 'reactstrap';
 import axios from 'axios';
 
 class AlertList extends React.Component {
