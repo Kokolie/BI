@@ -1,7 +1,7 @@
 // Initializes the `readtxt#` service on path `/readtxt`
 const createService = require('feathers-nedb');
 const createModel = require('../../models/readxlsx.model');
-const hooks = require('./readxslsx.hooks');
+const hooks = require('./readxlsx.hooks');
 const blobService = require('feathers-blob');
 const fs = require('fs-blob-store');
 const blobStorage = fs('./uploads');
@@ -31,7 +31,7 @@ module.exports = function() {
       blobService({Model: blobStorage})
   );
   // Get our initialized service so that we can register hooks and filters
-  const service = app.service('readxslx');
+  const service = app.service('readxlsx');
 
   service.hooks(hooks);
 
