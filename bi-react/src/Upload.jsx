@@ -2,17 +2,20 @@ import React from 'react';
 import { Button, Card, CardBody, CardGroup, CardFooter, CardText, CardTitle, Form, Input } from 'reactstrap';
 import axios from 'axios';
 import './styles/Home.css';
-import FileReader from 'filereader';
+import FormData from 'form-data';
 
 class Upload extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       selectedFile: null,
+      selectedFileXlsx: null,
       loaded: 0
     };
     this.handleUpload = this.handleUpload.bind(this);
     this.handleselectedFile = this.handleselectedFile.bind(this);
+    this.handleUploadXlsx = this.handleUploadXlsx.bind(this);
+    this.handleselectedFileXlsx = this.handleselectedFileXlsx.bind(this);
   }
 
   async componentDidMount() {
@@ -22,15 +25,14 @@ class Upload extends React.Component {
   async componentWillUnmount() {
     clearTimeout(this.timeout);
   }
-/*
-  handleUpload = () => {
+
+  handleUpload = (e) => {
       const data = new FormData();
-      data.append('file', this.state.selectedFile, this.state.selectedFile.name);
-      console.log(data);
+      data.append('uri', this.state.selectedFile, this.state.selectedFile.name);
       axios
         .post("http://localhost:3030/readtxt", data, { 
           headers: {
-            'Content-Type': 'application/json'
+          'Content-Type': 'multipart/form-data'
           },
           onUploadProgress: ProgressEvent => {
             this.setState({
@@ -43,20 +45,35 @@ class Upload extends React.Component {
         })
 
   }
-*/
-  async handleUpload() {
-
-    console.log(this.state.selectedFile);
-    var reader = new FileReader();
-
-    reader.onload = function(e) {
-      var text = reader.result;
-      console.log(text);
-    }    
-    console.log(reader.readAsText(this.state.selectedFile));
-  }
 
   handleselectedFile = event => {
+      this.setState({
+        selectedFile: event.target.files[0],
+        loaded: 0,
+      })
+    }
+
+  handleUploadXlsx = (e) => {
+      const data = new FormData();
+      data.append('uri', this.state.selectedFile, this.state.selectedFile.name);
+      axios
+        .post("http://localhost:3030/readxlsx", data, { 
+          headers: {
+          'Content-Type': 'multipart/form-data'
+          },
+          onUploadProgress: ProgressEvent => {
+            this.setState({
+              loaded: (ProgressEvent.loaded / ProgressEvent.total*100),
+            })
+          },
+        })
+        .then(res => {
+          console.log(res.statusText)
+        })
+
+  }
+
+  handleselectedFileXlsx = event => {
       this.setState({
         selectedFile: event.target.files[0],
         loaded: 0,
@@ -71,9 +88,9 @@ class Upload extends React.Component {
     <CardGroup>
     <Card>
     <CardBody>
-    <CardTitle>Upload a file</CardTitle>
+    <CardTitle>Upload a txt file</CardTitle>
     <CardText> 
-      <Input type="file" name="" id="" onChange={this.handleselectedFile}/>
+      <Input type="file" name="file" id="" onChange={this.handleselectedFile}/>
     </CardText>
     </CardBody>
     <CardFooter>
@@ -81,6 +98,18 @@ class Upload extends React.Component {
       <div> {Math.round(this.state.loaded,2) } %</div>
     </CardFooter>
     </Card>
+    <Card>
+    <CardBody>
+    <CardTitle>Upload an xlsx file</CardTitle>
+    <CardText> 
+      <Input type="file" name="file" id="" onChange={this.handleselectedFileXlsx}/>
+    </CardText>
+    </CardBody>
+    <CardFooter>
+      <Button onClick={this.handleUploadXlsx}>Upload</Button>
+      <div> {Math.round(this.state.loaded,2) } %</div>
+    </CardFooter>
+    </Card>    
     </CardGroup> 
     </Form>
     </div>)

@@ -6,6 +6,7 @@ import Img from 'react-image'
 import axios from 'axios';
 import Home from './Home.jsx'
 import Upload from './Upload.jsx'
+import AlertList from './AlertList.jsx'
 
 class NavBar extends React.Component {
   constructor(props) {
@@ -36,17 +37,22 @@ class NavBar extends React.Component {
           <NavbarBrand href="/">Business Intelligence</NavbarBrand>
           <NavbarToggler className="text-right nav-right" onClick={this.toggle} />
           <Collapse isOpen={this.state.isOpen} navbar>
-            {this.state.loggedIn && <Nav style={{width:"100%", marginRight:"30px"}} className="text-right">
+            <Nav style={{width:"100%", marginRight:"30px"}} className="text-right">
               <NavItem>
-                <Link className="nav-tab" to="/Home">Home</Link>
+                <Link className="nav-tab" to="/Alerts">Alerts</Link>
+              </NavItem>  
+              <NavItem>
+                <Link className="nav-tab" to="/Export">Export</Link>
               </NavItem>
               <NavItem>
                 <Link className="nav-tab" to="/Upload">Upload</Link>
-              </NavItem>              
-            </Nav> }
+              </NavItem>               
+            </Nav>
           </Collapse>          
         </Navbar>
         <Route exact path="/" component={Home} />
+        <Route exact path="/Alerts" component={AlertList} />
+        <Route exact path="/Export" component={Home} />
         <Route exact path="/Upload" component={Upload} />
         </div>
       </Router>
@@ -54,7 +60,7 @@ class NavBar extends React.Component {
       <Container>
       <Row>
       <Col className="text-center">
-        Back-end: API
+        Back-end: http://localhost:3030
       </Col>
       </Row>
       </Container>

@@ -9,33 +9,35 @@ const dauria = require('dauria');
 const multer = require('multer');
 const multipartMiddleware = multer();
 
-module.exports = function (app) {
+module.exports = function() {
+  const app = this;
   const Model = createModel(app);
   const paginate = app.get('paginate');
 
-  const options = {
-    Model,
-    paginate
-  };
-
   // Initialize our service with any options it requires
-  //app.use('/readtxt', createService(options));
-// Upload Service with multipart support
-app.use('/readtxt', {
+  app.use('/readtxt',
 
-  async create(data, params) {
+      // multer parses the file named 'uri'.
+      // Without extra params the data is
+      // temporarely kept in memory
+      multipartMiddleware.single('uri'),
 
-    console.log(data.data);
-  }
-});
-  // before-create Hook to get the file (if there is any)
-  // and turn it into a datauri,
-  // transparently getting feathers-blob to work
-  // Get our initialized service so that we can register hooks
+      // another middleware, this time to
+      // transfer the received file to feathers
+      function(req,res,next){
+          req.feathers.file = req.file;
+          console.log(req.file);
+          console.log(res);
+          next();
+      },
+      blobService({Model: blobStorage})
+  );
+  // Get our initialized service so that we can register hooks and filters
   const service = app.service('readtxt');
 
   service.hooks(hooks);
+
   if (service.filter) {
     service.filter(filters);
-  }  
+  }
 };
