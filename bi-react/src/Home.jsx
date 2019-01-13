@@ -1,6 +1,5 @@
 import React from 'react';
 import { Button, Card, CardBody, CardGroup, CardText, CardTitle } from 'reactstrap';
-import axios from 'axios';
 import './styles/Home.css';
 
 class Home extends React.Component {

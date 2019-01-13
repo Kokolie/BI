@@ -2,7 +2,6 @@ import React from 'react';
 import './styles/NavBar.css';
 import { BrowserRouter as Router, Route, Link } from "react-router-dom";
 import { Collapse, Col, Container, Navbar, NavbarBrand, NavbarToggler, Nav, NavItem, Row } from 'reactstrap';
-import axios from 'axios';
 import Home from './Home.jsx'
 import Upload from './Upload.jsx'
 import AlertList from './AlertList.jsx'
@@ -49,7 +48,7 @@ class NavBar extends React.Component {
             </Nav>
           </Collapse>          
         </Navbar>
-        <Route exact path="/" component={Home} />
+        <Route exact path="/" component={AlertList} />
         <Route exact path="/Alerts" component={AlertList} />
         <Route exact path="/Export" component={Home} />
         <Route exact path="/Upload" component={Upload} />

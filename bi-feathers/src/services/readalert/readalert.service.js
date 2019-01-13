@@ -15,6 +15,7 @@ function readFile(app, fileName) {
 
   fsjs.readFile("./uploads/" + fileName, function(err, data) {
 
+    console.log("Reading alert");
     var contents = `${data}`
     parser = new DOMParser();
     xmlDoc = parser.parseFromString(contents,"text/xml");
@@ -35,6 +36,7 @@ function readFile(app, fileName) {
     //console.log(children[19].text);
     entry.loaded = parseInt(children[20].text);
     app.service('sequelise').create(entry);
+    console.log("Done")
   });
 }
 

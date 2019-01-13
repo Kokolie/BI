@@ -46,39 +46,16 @@ const sequelize = new Sequelize('datawarehouse', 'root', 'root',
     speed: { type: Sequelize.INTEGER, allowNull: false },
     direction: { type: Sequelize.INTEGER, allowNull: false }      
   });
-  const Sensortype = sequelize.define('dim_sensortype', {
-    description: Sequelize.STRING,
-    name: { type: Sequelize.STRING, allowNull: false }
-  });
-  const Sensorreading = sequelize.define('dim_sensorreading', {
-    reading: { type: Sequelize.STRING, allowNull: false }
-  });
   const SpeedCategory = sequelize.define('dim_speedcategory', {
     name: { type: Sequelize.STRING, unique: true, allowNull: false },
     minimum: { type: Sequelize.INTEGER, allowNull: false },
     maximum: { type: Sequelize.INTEGER, allowNull: false}
-  });
-  const Location = sequelize.define('dim_location', {
-
-    location: Sequelize.STRING,
-    x: { type: Sequelize.INTEGER, allowNull: false },
-    y: { type: Sequelize.INTEGER, allowNull: false }
-  });
-  const Movement = sequelize.define('dim_movement', {
-    speed: { type: Sequelize.DOUBLE, allowNull: false},
-    direction: { type: Sequelize.INTEGER, allowNull: false }
   });
 
   Client.belongsTo(Country, {foreignKey: 'countryId'});
   Vehicle.belongsTo(Client, {foreignKey: 'customerId'});
   Alert.belongsTo(Alerttype);
   Alert.belongsTo(Vehicle), {foreignKey: 'vehicleId'};
-  Sensorreading.belongsTo(Vehicle);
-  Sensorreading.belongsTo(Sensortype);
-  Alert.belongsTo(Location);
-  Movement.belongsTo(Location, {foreignKey: 'originId'});
-  Movement.belongsTo(Location, {foreignKey: 'destinationId'});
-  Movement.belongsTo(Vehicle);
 
 async function addCountry(data, params) {
 
@@ -101,9 +78,6 @@ async function addClient(data, params) {
   var country = {};
   country.name = data.customercountry;
   var countryId = await addCountry(country);
-  //console.log("CountryId" + countryId);
-  //console.log("CountryId" + await addCountry(country));
-  //console.log(countryId);
 
   await sequelize.sync()
   .then(() => Client.findOrCreate(
@@ -143,8 +117,6 @@ async function addAlertType(data, params) {
 
 async function getAlertType(alerttype, params) {
 
-  console.log("?");
-  console.log(alerttype);
   let result;
   return await sequelize.sync()
   .then(() => Alerttype.findOne({ where: {
@@ -156,9 +128,21 @@ async function getAlertType(alerttype, params) {
   });;
 }
 
+async function getAlertTypeById(id, params) {
+
+  let result;
+  return await sequelize.sync()
+  .then(() => Alerttype.findOne({ where: {
+    id: id,
+  }}))
+  .then(function(x) {
+    result = x.dataValues;
+    return result;
+  });;
+}
+
 async function addSpeedCategory(data, params) {
 
-  console.log(data);
   await sequelize.sync()
   .then(() => SpeedCategory.findOrCreate({ where: {
     name: data.name,
@@ -168,11 +152,8 @@ async function addSpeedCategory(data, params) {
 }
 
 async function addAlert(data, params) {
-
-  console.log(data);
   
   var alertTypeId = await getAlertType(data.alerttype);
-  console.log(alertTypeId.id);
   await sequelize.sync()
   .then(() => Alert.findOrCreate({ where: {
     timestamp: data.timestamp,
@@ -186,43 +167,28 @@ async function addAlert(data, params) {
   }}));
 }
 
-async function addSensorType(data, params) {
-
-  await sequelize.sync()
-  .then(() => Sensortype.findOrCreate({
-    name: data.name,
-    description: data.description
+async function getAllAlerts(data, params) {
+  
+  return await sequelize.sync()
+  .then(() => Alert.findAll()
+  .then(async function(elements) {
+    var list = [];
+    for(const element of elements) {
+      alert = element.dataValues;
+      var alertType = await getAlertTypeById(alert.dimAlerttypeId);
+      //console.log(alertType);
+      alert.name = alertType.name;
+      alert.environmental = alertType.environmental;
+      alert.blocking = alertType.blocking;
+      list.push(alert);
+      //console.log(list);
+      //list;
+    }
+    return list;
   }));
+  //.then((list) => console.log(list));
+  //console.log(alertList);
 }
-
-async function addSensorReading(data, params) {
-
-  await sequelize.sync()
-  .then(() => Sensorreading.findOrCreate({
-    reading: data.reading
-  }));
-}
-
-async function addLocation(data, params) {
-
-  await sequelize.sync()
-  .then(() => Location.findOrCreate({
-    x: data.x,
-    y: data.y,
-    location: data.location
-  }));
-}
-
-async function addMovement(data, params) {
-
-  await sequelize.sync()
-  .then(() => Movement.findOrCreate({
-    speed: data.speed,
-    direction: data.direction
-  }));
-}
-
-
 
 module.exports = function (app) {
   const Model = createModel(app);
@@ -236,16 +202,13 @@ module.exports = function (app) {
   // Initialize our service with any options it requires
   app.use('/sequelise', {
 
-    async get(params) {
+    async get(id, params) {
 
       var result;
-      sequelize.sync()
-      .then(() => Country.create({
-        name: 'janedoe'
-      }))
-      .then(jane => {
-        console.log(jane.toJSON());
-      });
+
+      if(id === "alerts") {
+        result = getAllAlerts();
+      }
 
       return Promise.resolve(
         result
@@ -254,7 +217,6 @@ module.exports = function (app) {
 
     async create(data, params) {
 
-      //console.log(data);
       if(data.type == "country") {
         await addCountry(data, params);
       }
