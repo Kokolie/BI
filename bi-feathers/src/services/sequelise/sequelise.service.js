@@ -7,30 +7,44 @@ const sequelize = new Sequelize('datawarehouse', 'root', 'root',
   {
     host: 'localhost', 
     dialect:'mysql',
+    logging: false,
     pool: {
-      max: 5,
+      max: 30,
       min: 0,
-      acquire: 30000,
-      idle:10000
+      acquire: 120000,
+      idle:120000,
+      evict: 120000
     },
     operatorsAliases: false
   });
 
   const Country = sequelize.define('dim_country', {
-    name: { type: Sequelize.STRING, allowNull: false }
+    name: { type: Sequelize.STRING, allowNull: false, unique: true }
   });
   const Client = sequelize.define('dim_client', {
+    id: { type: Sequelize.INTEGER, allowNull: false, primaryKey: true, unique: true},
     name: { type: Sequelize.STRING, allowNull: false }
   });
   const Vehicle = sequelize.define('vehicle', {
-    model: { type: Sequelize.STRING, allowNull: false}
+    id: { type: Sequelize.INTEGER, allowNull: false, primaryKey: true, unique: true},
+    identification: { type: Sequelize.STRING, allowNull: false},
+    inProductionDate: { type: Sequelize.STRING, allowNull: false},
+    outProductionDate: { type: Sequelize.STRING, allowNull: true }
   });
   const Alerttype = sequelize.define('dim_alerttype', {
-    description: Sequelize.STRING,
-    name: { type: Sequelize.STRING, allowNull: false }
+    id: { type: Sequelize.INTEGER, allowNull: false, primaryKey: true, unique: true},
+    description: { type: Sequelize.STRING, allowNull: true },
+    name: { type: Sequelize.STRING, allowNull: false, unique: true },
+    environmental: { type: Sequelize.BOOLEAN, allowNull: false},
+    blocking: { type: Sequelize.BOOLEAN, allowNull: false }
   });
   const Alert = sequelize.define('dim_alert', {
-    timestamp: { type: Sequelize.DATE, allowNull: false }
+    timestamp: { type: Sequelize.STRING, allowNull: false },
+    avgjobkey: { type: Sequelize.INTEGER, allowNull: false },
+    x: { type: Sequelize.INTEGER, allowNull: false },
+    y: { type: Sequelize.INTEGER, allowNull: false },
+    speed: { type: Sequelize.INTEGER, allowNull: false },
+    direction: { type: Sequelize.INTEGER, allowNull: false }      
   });
   const Sensortype = sequelize.define('dim_sensortype', {
     description: Sequelize.STRING,
@@ -38,6 +52,11 @@ const sequelize = new Sequelize('datawarehouse', 'root', 'root',
   });
   const Sensorreading = sequelize.define('dim_sensorreading', {
     reading: { type: Sequelize.STRING, allowNull: false }
+  });
+  const SpeedCategory = sequelize.define('dim_speedcategory', {
+    name: { type: Sequelize.STRING, unique: true, allowNull: false },
+    minimum: { type: Sequelize.INTEGER, allowNull: false },
+    maximum: { type: Sequelize.INTEGER, allowNull: false}
   });
   const Location = sequelize.define('dim_location', {
 
@@ -50,62 +69,127 @@ const sequelize = new Sequelize('datawarehouse', 'root', 'root',
     direction: { type: Sequelize.INTEGER, allowNull: false }
   });
 
-  Client.belongsTo(Country);
-  Vehicle.belongsTo(Client);
+  Client.belongsTo(Country, {foreignKey: 'countryId'});
+  Vehicle.belongsTo(Client, {foreignKey: 'customerId'});
   Alert.belongsTo(Alerttype);
-  Alert.belongsTo(Vehicle);
+  Alert.belongsTo(Vehicle), {foreignKey: 'vehicleId'};
   Sensorreading.belongsTo(Vehicle);
   Sensorreading.belongsTo(Sensortype);
-  Vehicle.belongsTo(Location);
+  Alert.belongsTo(Location);
   Movement.belongsTo(Location, {foreignKey: 'originId'});
   Movement.belongsTo(Location, {foreignKey: 'destinationId'});
   Movement.belongsTo(Vehicle);
 
 async function addCountry(data, params) {
 
-  sequelize.sync()
-  .then(() => Country.create({
-    name: data.name
-  }));
+  let id;
+  return await sequelize.sync()
+  .then(function() {
+    return Country.findOrCreate(
+      { where: {
+        name: data.name
+      }})
+  })
+  .then(function(x) {
+    id = x[0].dataValues.id;
+    return id;
+  });
 }
 
 async function addClient(data, params) {
 
-  sequelize.sync()
-  .then(() => Client.create({
-    name: data.name
-  }));
+  var country = {};
+  country.name = data.customercountry;
+  var countryId = await addCountry(country);
+  //console.log("CountryId" + countryId);
+  //console.log("CountryId" + await addCountry(country));
+  //console.log(countryId);
+
+  await sequelize.sync()
+  .then(() => Client.findOrCreate(
+    { 
+      where: {
+        id: data.custid,
+        name: data.customername,
+        countryId: countryId
+      }
+    }
+  ));
 }
 
 async function addVehicle(data, params) {
 
-  sequelize.sync()
-  .then(() => Vehicle.create({
-    model: data.model
-  }));
+  await sequelize.sync()
+  .then(() => Vehicle.findOrCreate({ where: {
+    id: data.avgid,
+    customerId: data.customerkey,
+    identification: data.identification,
+    inProductionDate: data.inproductiondate,
+    outProductionDate: data.outproductiondate
+  }}));
 }
 
 async function addAlertType(data, params) {
 
-  sequelize.sync()
-  .then(() => Alerttype.create({
+  await sequelize.sync()
+  .then(() => Alerttype.findOrCreate({ where: {
+    id: data.alertid,
     name: data.name,
-    description: data.description
-  }));
+    description: data.description,
+    environmental: data.environmental,
+    blocking: data.blocking
+  }}));
+}
+
+async function getAlertType(alerttype, params) {
+
+  console.log("?");
+  console.log(alerttype);
+  let result;
+  return await sequelize.sync()
+  .then(() => Alerttype.findOne({ where: {
+    name: alerttype,
+  }}))
+  .then(function(x) {
+    result = x.dataValues;
+    return result;
+  });;
+}
+
+async function addSpeedCategory(data, params) {
+
+  console.log(data);
+  await sequelize.sync()
+  .then(() => SpeedCategory.findOrCreate({ where: {
+    name: data.name,
+    minimum: data.minimum,
+    maximum: data.maximum
+  }}));
 }
 
 async function addAlert(data, params) {
 
-  sequelize.sync()
-  .then(() => Alert.create({
-    timestamp: data.timestamp
-  }));
+  console.log(data);
+  
+  var alertTypeId = await getAlertType(data.alerttype);
+  console.log(alertTypeId.id);
+  await sequelize.sync()
+  .then(() => Alert.findOrCreate({ where: {
+    timestamp: data.timestamp,
+    vehicleId: data.vehicleId,
+    avgjobkey: data.avgjobkey,
+    x: data.x,
+    y: data.y,
+    direction: data.direction,
+    speed: data.speed,
+    dimAlerttypeId: alertTypeId.id
+  }}));
 }
 
 async function addSensorType(data, params) {
 
-  sequelize.sync()
-  .then(() => Sensortype.create({
+  await sequelize.sync()
+  .then(() => Sensortype.findOrCreate({
     name: data.name,
     description: data.description
   }));
@@ -113,16 +197,16 @@ async function addSensorType(data, params) {
 
 async function addSensorReading(data, params) {
 
-  sequelize.sync()
-  .then(() => Sensorreading.create({
+  await sequelize.sync()
+  .then(() => Sensorreading.findOrCreate({
     reading: data.reading
   }));
 }
 
 async function addLocation(data, params) {
 
-  sequelize.sync()
-  .then(() => Location.create({
+  await sequelize.sync()
+  .then(() => Location.findOrCreate({
     x: data.x,
     y: data.y,
     location: data.location
@@ -131,8 +215,8 @@ async function addLocation(data, params) {
 
 async function addMovement(data, params) {
 
-  sequelize.sync()
-  .then(() => Movement.create({
+  await sequelize.sync()
+  .then(() => Movement.findOrCreate({
     speed: data.speed,
     direction: data.direction
   }));
@@ -161,7 +245,7 @@ module.exports = function (app) {
       }))
       .then(jane => {
         console.log(jane.toJSON());
-      });      
+      });
 
       return Promise.resolve(
         result
@@ -170,39 +254,44 @@ module.exports = function (app) {
 
     async create(data, params) {
 
+      //console.log(data);
       if(data.type == "country") {
-        addCountry(data, params);
+        await addCountry(data, params);
       }
       else if(data.type == "client") {
-        addData(data, params);
+        await addClient(data, params);
       }
 
       else if(data.type == "vehicle") {
-        addVehicle(data, params);
+        await addVehicle(data, params);
       }
 
       else if(data.type == "alerttype") {
-        addAlertType(data, params);
+        await addAlertType(data, params);
+      }
+
+      else if(data.type == "speedtype") {
+        await addSpeedCategory(data, params);
       }
 
       else if(data.type == "alert") {
-        addAlert(data, params);
+        await addAlert(data, params);
       }
 
       else if(data.type == "sensortype") {
-        addSensorType(data, params);
+        await addSensorType(data, params);
       }
 
       else if(data.type == "sensorreading") {
-        addSensorReading(data, params);
+        await addSensorReading(data, params);
       }
 
       else if(data.type == "location") {
-        addLocation(data, params);
+        await addLocation(data, params);
       }
 
       else if(data.type == "movement") {
-        addMovement(data, params);
+        await addMovement(data, params);
       }
 
       return Promise.resolve(true);

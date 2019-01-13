@@ -9,14 +9,32 @@ const dauria = require('dauria');
 const multer = require('multer');
 const multipartMiddleware = multer();
 const fsjs = require('fs');
+const DOMParser = require('dom-parser');
 
-function readFile(fileName) {
+function readFile(app, fileName) {
 
   fsjs.readFile("./uploads/" + fileName, function(err, data) {
 
     var contents = `${data}`
-    //Check file type
-    console.log(contents);
+    parser = new DOMParser();
+    xmlDoc = parser.parseFromString(contents,"text/xml");
+    var children = xmlDoc.getElementsByTagName("root")[0].childNodes;
+    var entry = {}
+    var temp = children[0].text
+    var idstring = temp.substr(temp.search("=")+2, temp.length-(temp.search("=")+3));
+    entry.type = "alert";
+    entry.vehicleId = parseInt(idstring, 10);
+    entry.alerttype = children[3].text;
+    entry.timestamp = children[5].text;
+    entry.blocked = parseInt(children[7].text);
+    entry.avgjobkey = children[10].text;
+    entry.x = children[12].text;
+    entry.y = children[14].text;
+    entry.direction = children[16].text;
+    entry.speed = children[18].text;
+    //console.log(children[19].text);
+    entry.loaded = parseInt(children[20].text);
+    app.service('sequelise').create(entry);
   });
 }
 
@@ -44,8 +62,7 @@ module.exports = function() {
   // Get our initialized service so that we can register hooks and filters
   const service = app.service('readalert');
   service.on('created', function(file) {
-    readFile(file.id);
-    //console.log(file);
+    readFile(app, file.id);
   })
   service.hooks(hooks);
 
